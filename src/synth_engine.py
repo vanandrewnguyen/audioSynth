@@ -2,7 +2,9 @@ from src.oscillator import SineOscillator, TriangleOscillator, SquareOscillator
 from typing import Iterator, List, Union, Optional
 import numpy as np
 import numpy.typing as npt
+import matplotlib.pyplot as plt
 from scipy.io import wavfile
+
 
 class WaveAdder:
     def __init__(self, *oscillators: Iterator[float]) -> None:
@@ -35,7 +37,7 @@ class SynthEngine:
         wav2: Optional[Union[list[float], npt.NDArray[np.float64]]] = None,
         fname: str = "temp.wav",
         amp: float = 0.1,
-        sample_rate: int = 44100
+        sample_rate: int = 44100,
     ) -> None:
         wav_arr: npt.NDArray[np.float64] = np.array(wav)
         wav_arr = np.int16(wav_arr * amp * (2**15 - 1))
@@ -47,13 +49,37 @@ class SynthEngine:
 
         wavfile.write(fname, sample_rate, wav_arr)
 
+    def plot_waveform(
+        self,
+        wav: Union[list[float], npt.NDArray[np.float64]],
+        fname:str,
+        title: str = "Waveform",
+    ) -> None:
+        wav_arr = np.array(wav)
+        time_axis = np.linspace(0, self._sample_duration_sec, len(wav_arr))
+
+        plt.figure(figsize=(10, 4))
+        plt.plot(time_axis, wav_arr, linewidth=0.5)
+        plt.title(title)
+        plt.xlabel("Time (s)")
+        plt.ylabel("Amplitude")
+        plt.grid(True)
+        plt.tight_layout()
+
+        plt.savefig(f"{fname}.png")
+        plt.close()
+
     def run(self) -> None:
         gen: WaveAdder = WaveAdder(
             SineOscillator(freq=880, amp=0.8),
             TriangleOscillator(freq=220, amp=0.4),
             SquareOscillator(freq=55, amp=0.4),
         )
+
         iter(gen)
         duration: int = self._sample_rate * int(self._sample_duration_sec)
         wav = [next(gen) for _ in range(duration)]
-        self.wave_to_file(wav, fname="prelude_one.wav")
+
+        filename: str = "prelude_one"
+        self.plot_waveform(wav[:2000], fname=filename)
+        self.wave_to_file(wav, fname=f"{filename}.wav")

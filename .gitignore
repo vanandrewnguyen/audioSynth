@@ -4,3 +4,4 @@ env/
 venv_wsl/
 **/__pycache__/
 *.wav
+*.png

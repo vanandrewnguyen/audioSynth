@@ -184,4 +184,3 @@ class TriangleOscillator(SawtoothOscillator):
             val = self.squish_val(val, *self._wave_range)
 
         return val * self._a
-
