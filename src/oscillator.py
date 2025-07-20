@@ -1,15 +1,5 @@
 from abc import ABC, abstractmethod
-from enum import Enum
 import math
-
-
-class WaveForm(Enum):
-    OSC_SINE = 0
-    OSC_SQUARE = 1
-    OSC_TRIANGLE = 2
-    OSC_SAW_LIM = 3
-    OSC_SAW = 4
-    OSC_NOISE = 5
 
 
 class Oscillator(ABC):
@@ -96,6 +86,7 @@ class Oscillator(ABC):
 
     @staticmethod
     def squish_val(val: float, min_val: float = 0.0, max_val: float = 1.0) -> float:
+        # Normalise by higher range val
         return (((val + 1) / 2) * (max_val - min_val)) + min_val
 
     @abstractmethod
@@ -146,6 +137,8 @@ class SquareOscillator(SineOscillator):
     def __next__(self):
         val: float = math.sin(self._i + self._p)
         self._i = self._i + self._step
+
+        # Fixed value based on time step
         val = self._wave_range[0] if val < self.threshold else self._wave_range[1]
 
         return val * self._a

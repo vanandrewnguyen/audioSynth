@@ -7,18 +7,21 @@ from scipy.io import wavfile
 
 
 class WaveAdder:
+    _oscillators: tuple[Iterator[float], ...]
+    _num_oscillators: int
+
     def __init__(self, *oscillators: Iterator[float]) -> None:
-        self.oscillators: tuple[Iterator[float], ...] = oscillators
-        self.n: int = len(oscillators)
+        self._oscillators = oscillators
+        self._num_oscillators = len(oscillators)
 
     def __iter__(self) -> "WaveAdder":
         # Init all osc in list, calling _initialize_osc
-        [iter(osc) for osc in self.oscillators]
+        [iter(osc) for osc in self._oscillators]
         return self
 
     def __next__(self) -> float:
         # Additive Synthesis
-        return sum(next(osc) for osc in self.oscillators) / self.n
+        return sum(next(osc) for osc in self._oscillators) / self._num_oscillators
 
 
 class SynthEngine:
@@ -70,6 +73,7 @@ class SynthEngine:
         plt.close()
 
     def run(self) -> None:
+        # TODO Add this generator code into a specific instrument, that can be used on a voice in a channel
         gen: WaveAdder = WaveAdder(
             SineOscillator(freq=880, amp=0.8),
             TriangleOscillator(freq=220, amp=0.4),
@@ -78,6 +82,7 @@ class SynthEngine:
 
         iter(gen)
         duration: int = self._sample_rate * int(self._sample_duration_sec)
+        # Generate float values for oscillators at x time in 0..duration
         wav = [next(gen) for _ in range(duration)]
 
         filename: str = "prelude_one"
