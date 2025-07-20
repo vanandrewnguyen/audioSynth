@@ -3,7 +3,14 @@ Following the spirit of raytracerInOneWeekend I am learning about audio processi
 
 ## Feature List 
 ### Basic Usage
-- [x] Polyphany
+- [x] Basic waveforms
+- [ ] Envelopes
+- [ ] LFO; AM, FM
+- [ ] Panner
+- [ ] Modifier Chain
+- [ ] Polyphany
+- [ ] MIDI Input
+- [ ] Keyboard Input
 - [ ] Instrument sequencer
 ### User Interface
 - [ ] GUI Sequencer
