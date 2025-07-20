@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from enum import Enum
 import math
 import random
 
@@ -66,40 +65,3 @@ def scale(note_id: int, scale_id: int = Constants.SCALE_DEFAULT):
     if scale_id == Constants.SCALE_DEFAULT:
         return 256 * math.pow(1.0594630943592952645618252949463, note_id)
     return 0.0
-
-
-class WaveForm(Enum):
-    OSC_SINE = 0
-    OSC_SQUARE = 1
-    OSC_TRIANGLE = 2
-    OSC_SAW_LIM = 3
-    OSC_SAW = 4
-    OSC_NOISE = 5
-
-
-def osc(
-    time: float,
-    hz: float,
-    wave_type: WaveForm = WaveForm.OSC_SINE,
-    lfo_hz: float = 0.0,
-    lfo_amp: float = 0.0,
-    custom: float = 50.0,
-):
-    freq = freq_to_vel(hz) * time + lfo_amp * hz * math.sin(freq_to_vel(lfo_hz) * time)
-
-    if wave_type == WaveForm.OSC_SINE:
-        return math.sin(freq)
-    elif wave_type == WaveForm.OSC_SQUARE:
-        return 1.0 if math.sin(freq) > 0.0 else -1.0
-    elif wave_type == WaveForm.OSC_TRIANGLE:
-        return math.asin(math.sin(freq)) * 2.0 / Constants.PI
-    elif wave_type == WaveForm.OSC_SAW_LIM:
-        return sum(math.sin(i * freq) / i for i in range(1, 100)) * (2.0 / Constants.PI)
-    elif wave_type == WaveForm.OSC_SAW:
-        return (2.0 / Constants.PI) * (
-            hz * Constants.PI * math.fmod(time, 1.0 / hz) - (Constants.PI / 2.0)
-        )
-    elif wave_type == WaveForm.OSC_NOISE:
-        return random_double()
-    else:
-        return 0.0
