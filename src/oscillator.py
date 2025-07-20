@@ -22,6 +22,7 @@ class Oscillator(ABC):
     _f: float
     _a: float
     _p: float
+    _i: float
 
     def __init__(
         self,
@@ -184,30 +185,3 @@ class TriangleOscillator(SawtoothOscillator):
 
         return val * self._a
 
-
-# def osc(
-#     time: float,
-#     hz: float,
-#     wave_type: WaveForm = WaveForm.OSC_SINE,
-#     lfo_hz: float = 0.0,
-#     lfo_amp: float = 0.0,
-#     custom: float = 50.0,
-# ):
-#     freq = freq_to_vel(hz) * time + lfo_amp * hz * math.sin(freq_to_vel(lfo_hz) * time)
-
-#     if wave_type == WaveForm.OSC_SINE:
-#         return math.sin(freq)
-#     elif wave_type == WaveForm.OSC_SQUARE:
-#         return 1.0 if math.sin(freq) > 0.0 else -1.0
-#     elif wave_type == WaveForm.OSC_TRIANGLE:
-#         return math.asin(math.sin(freq)) * 2.0 / Constants.PI
-#     elif wave_type == WaveForm.OSC_SAW_LIM:
-#         return sum(math.sin(i * freq) / i for i in range(1, 100)) * (2.0 / Constants.PI)
-#     elif wave_type == WaveForm.OSC_SAW:
-#         return (2.0 / Constants.PI) * (
-#             hz * Constants.PI * math.fmod(time, 1.0 / hz) - (Constants.PI / 2.0)
-#         )
-#     elif wave_type == WaveForm.OSC_NOISE:
-#         return random_double()
-#     else:
-#         return 0.0

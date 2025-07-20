@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 import math
 import random
-
-# from src.vec3 import Vec3
+from src.vec3 import Vec3
 
 
 @dataclass
@@ -29,28 +28,24 @@ def random_int(min_range: int, max_range: int) -> int:
     return random.randint(min_range, max_range)
 
 
-# def hash21(co):
-#     return math.fmod(math.sin(co[0] * 12.9898 + co[1] * 78.233) * 43758.5453, 1.0)
+def hash31(p: Vec3) -> float:
+    fract = Vec3(math.fmod(p[0], 1.0), math.fmod(p[1], 1.0), math.fmod(p[2], 1.0))
+    fract *= Vec3(0.1031, 0.11369, 0.13787)
+    res = math.fmod(Vec3.dot(fract, Vec3(1.0, 1.0, 1.0)), 19.19)
+    fract += Vec3(res, res, res)
+    return -1.0 + 2.0 * math.fmod((fract[0] + fract[1]) * fract[2], 1.0)
 
 
-# def hash31(p):
-#     fract = Vec3(math.fmod(p[0], 1.0), math.fmod(p[1], 1.0), math.fmod(p[2], 1.0))
-#     fract *= Vec3(0.1031, 0.11369, 0.13787)
-#     res = math.fmod(Vec3.dot(fract, Vec3(1.0, 1.0, 1.0)), 19.19)
-#     fract += Vec3(res, res, res)
-#     return -1.0 + 2.0 * math.fmod((fract[0] + fract[1]) * fract[2], 1.0)
-
-
-# def hash33(p3):
-#     p = p3 * Vec3(0.1031, 0.11369, 0.13787)
-#     p = p.fract()
-#     dot_prod = Vec3.dot(p, Vec3(p[1], p[0], p[2]) + Vec3(19.19, 19.19, 19.19))
-#     p += Vec3(dot_prod, dot_prod, dot_prod)
-#     return Vec3(
-#         -1.0 + 2.0 * math.fmod((p[0] + p[1]) * p[2], 1.0),
-#         -1.0 + 2.0 * math.fmod((p[0] + p[2]) * p[1], 1.0),
-#         -1.0 + 2.0 * math.fmod((p[1] + p[2]) * p[0], 1.0),
-#     )
+def hash33(p3: Vec3) -> Vec3:
+    p = p3 * Vec3(0.1031, 0.11369, 0.13787)
+    p = p.fract()
+    dot_prod = Vec3.dot(p, Vec3(p[1], p[0], p[2]) + Vec3(19.19, 19.19, 19.19))
+    p += Vec3(dot_prod, dot_prod, dot_prod)
+    return Vec3(
+        -1.0 + 2.0 * math.fmod((p[0] + p[1]) * p[2], 1.0),
+        -1.0 + 2.0 * math.fmod((p[0] + p[2]) * p[1], 1.0),
+        -1.0 + 2.0 * math.fmod((p[1] + p[2]) * p[0], 1.0),
+    )
 
 
 def clamp(x: float, a_min: float, a_max: float) -> float:
