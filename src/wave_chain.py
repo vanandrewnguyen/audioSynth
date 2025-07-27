@@ -1,10 +1,11 @@
 from collections.abc import Iterable, Iterator
-from src.oscillator import Generator
+from src.oscillators.base_oscillator import Generator
 from src.modulator import TriggerableFloatGenerator, ModulatorType
 from typing import Union, Iterator, Callable, Tuple, Any
 
 
 class WaveAdder(Generator):
+    # By default stereo is false, no panning
     def __init__(self, *generators: Iterator, stereo: bool = False) -> None:
         self.generators: Tuple[Iterator, ...] = generators
         self.stereo: bool = stereo
@@ -33,6 +34,7 @@ class WaveAdder(Generator):
     def __iter__(self) -> "WaveAdder":
         for gen in self.generators:
             iter(gen)
+
         return self
 
     def __next__(self):
@@ -55,9 +57,11 @@ class Chain:
     def __getattr__(self, attr: str):
         if hasattr(self.generator, attr):
             return getattr(self.generator, attr)
+
         for modifier in self.modifiers:
             if hasattr(modifier, attr):
                 return getattr(modifier, attr)
+
         raise AttributeError(f"attribute '{attr}' does not exist")
 
     def trigger_release(self) -> None:
@@ -71,23 +75,36 @@ class Chain:
     @property
     def ended(self) -> bool:
         ended = []
+
         if isinstance(self.generator, TriggerableFloatGenerator):
             ended.append(self.generator.ended)
-        ended.extend([mod.ended for mod in self.modifiers if hasattr(mod, "ended")])
+        ended.extend(
+            [
+                mod.ended
+                for mod in self.modifiers
+                if isinstance(mod, TriggerableFloatGenerator)
+            ]
+        )
+
         return all(ended)
 
     def __iter__(self) -> "Chain":
         iter(self.generator)
+
         for mod in self.modifiers:
             if isinstance(mod, TriggerableFloatGenerator):
                 iter(mod)
+
         return self
 
     def __next__(self) -> float:
         val = next(self.generator)
+
         for mod in self.modifiers:
             if isinstance(mod, TriggerableFloatGenerator):
                 next(mod)
+
         for mod in self.modifiers:
             val = mod(val)
+
         return val

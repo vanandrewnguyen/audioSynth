@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import math
 import random
-from src.vec3 import Vec3
+from src.helpers.vec3 import Vec3
 
 
 @dataclass

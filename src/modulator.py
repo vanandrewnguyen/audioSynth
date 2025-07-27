@@ -9,7 +9,8 @@ from typing import (
     runtime_checkable,
 )
 from src.envelopes import ADSREnvelope
-from src.oscillator import Oscillator, Generator
+from src.oscillators.oscillators import Oscillator
+from src.oscillators.base_oscillator import Generator
 
 
 # Modulators are anything that modulates the signal of a generator, it may be a generator itself
@@ -43,7 +44,7 @@ class ModulatedOscillator(Generator):
         *modulators: Iterator[float],
         amp_mod: Optional[Callable[[float, float], float]] = None,
         freq_mod: Optional[Callable[[float, float], float]] = None,
-        phase_mod: Optional[Callable[[float, float], float]] = None
+        phase_mod: Optional[Callable[[float, float], float]] = None,
     ) -> None:
         self.oscillator = oscillator
         self.modulators = modulators

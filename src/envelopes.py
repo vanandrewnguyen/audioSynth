@@ -16,6 +16,7 @@ class Envelope(ABC):
 
 
 class ADSREnvelope(Envelope):
+    # The stepper is a generator that returns a float for a wavelength at a given time
     _stepper: Optional[Iterator[float]]
 
     def __init__(
@@ -38,6 +39,7 @@ class ADSREnvelope(Envelope):
     def get_ads_stepper(self) -> Iterator[float]:
         steppers: List[Iterator[float]] = []
 
+        # Iter count generates inf floats given a rule (e.g. step)
         if self.attack_duration > 0:
             steppers.append(
                 itertools.count(
@@ -76,8 +78,8 @@ class ADSREnvelope(Envelope):
         val: float = self.val
 
         if self.release_duration > 0:
-            release_step = -val / (self.release_duration * self._sample_rate)
-            stepper = itertools.count(val, step=release_step)
+            release_step = -self.val / (self.release_duration * self._sample_rate)
+            stepper = itertools.count(self.val, step=release_step)
         else:
             # Exit
             val = -1

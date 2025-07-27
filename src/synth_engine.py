@@ -1,6 +1,6 @@
 from librosa import note_to_hz
-from src.oscillator import (
-    Generator,
+from src.oscillators.base_oscillator import Generator
+from src.oscillators.oscillators import (
     SineOscillator,
     TriangleOscillator,
     SquareOscillator,
@@ -10,29 +10,11 @@ from src.wave_chain import Chain, WaveAdder
 from src.modulator import ModulatedOscillator
 from src.modifier import Panner
 from src.envelopes import ADSREnvelope
-from typing import Iterator, List, Union, Optional
+from typing import Union, Optional
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
-
-
-# class WaveAdder(Generator):
-#     _oscillators: tuple[Iterator[float], ...]
-#     _num_oscillators: int
-
-#     def __init__(self, *oscillators: Iterator[float]) -> None:
-#         self._oscillators = oscillators
-#         self._num_oscillators = len(oscillators)
-
-#     def __iter__(self) -> "WaveAdder":
-#         # Init all osc in list, calling _initialize_osc
-#         [iter(osc) for osc in self._oscillators]
-#         return self
-
-#     def __next__(self) -> float:
-#         # Additive Synthesis
-#         return sum(next(osc) for osc in self._oscillators) / self._num_oscillators
 
 
 class SynthEngine:
@@ -94,6 +76,7 @@ class SynthEngine:
             return init_freq * val
 
         # TODO Add this generator code into a specific instrument, that can be used on a voice in a channel
+        # TODO Move all this generator code into generators folder
         # gen: WaveAdder = WaveAdder(
         #     SineOscillator(freq=880, amp=0.8),
         #     TriangleOscillator(freq=220, amp=0.4),
@@ -104,7 +87,7 @@ class SynthEngine:
         # gen = ModulatedOscillator(
         #     SineOscillator(freq=880, amp=0.8),
         #     ADSREnvelope(0.01, 0.02, 0.6, 0.1),
-        #     amp_mod=amp_mod
+        #     amp_mod=amp_mod,
         # )
 
         # LFO Wave AM
@@ -123,7 +106,9 @@ class SynthEngine:
 
         gen: Generator = WaveAdder(
             ModulatedOscillator(
-                SineOscillator(note_to_hz("A2")), ADSREnvelope(0.01, 0.1, 0.4), amp_mod=amp_mod
+                SineOscillator(note_to_hz("A2")),
+                ADSREnvelope(0.01, 0.1, 0.4),
+                amp_mod=amp_mod,
             ),
             ModulatedOscillator(
                 SineOscillator(note_to_hz("A2") + 3),
@@ -132,13 +117,17 @@ class SynthEngine:
             ),
             Chain(
                 ModulatedOscillator(
-                    TriangleOscillator(note_to_hz("C4")), ADSREnvelope(0.5), amp_mod=amp_mod
+                    TriangleOscillator(note_to_hz("C4")),
+                    ADSREnvelope(0.5),
+                    amp_mod=amp_mod,
                 ),
                 Panner(0.7),
             ),
             Chain(
                 ModulatedOscillator(
-                    TriangleOscillator(note_to_hz("E3")), ADSREnvelope(0.5), amp_mod=amp_mod
+                    TriangleOscillator(note_to_hz("E3")),
+                    ADSREnvelope(0.5),
+                    amp_mod=amp_mod,
                 ),
                 Panner(0.3),
             ),
@@ -147,6 +136,7 @@ class SynthEngine:
 
         iter(gen)
         duration: int = self._sample_rate * int(self._sample_duration_sec)
+
         # Generate float values for oscillators at x time in 0..duration
         wav = [next(gen) for _ in range(duration)]
 
