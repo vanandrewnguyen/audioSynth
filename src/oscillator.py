@@ -2,7 +2,12 @@ from abc import ABC, abstractmethod
 import math
 
 
-class Oscillator(ABC):
+# A generator generates a signal that can be played, e.g. a waveform
+class Generator(ABC):
+    pass
+
+
+class Oscillator(Generator):
     _freq: float
     _amp: float
     _phase: float
