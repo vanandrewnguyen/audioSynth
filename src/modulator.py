@@ -18,16 +18,20 @@ from src.oscillators.base_oscillator import Generator
 # - plain Iterator[float]
 # - or anything that follows the TriggerableFloatGenerator protocol
 # Modulators can be any kind of generator, e.g. envelope, another ModulatedOscillator
+
+# Stereo vs mono, can have 1/2 channels
+NumberOrStereo = Union[float, tuple[float, float]]
+
 @runtime_checkable
 class TriggerableFloatGenerator(Protocol):
     ended: bool
 
-    def __iter__(self) -> Iterator[float]: ...
-    def __next__(self) -> float: ...
+    def __iter__(self) -> Iterator[NumberOrStereo]: ...
+    def __next__(self) -> NumberOrStereo: ...
     def trigger_release(self) -> None: ...
 
 
-ModulatorType = Union[Iterator[float], TriggerableFloatGenerator]
+ModulatorType = Union[Iterator[NumberOrStereo], TriggerableFloatGenerator]
 
 
 class ModulatedOscillator(Generator):

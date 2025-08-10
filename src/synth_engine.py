@@ -8,7 +8,7 @@ from src.oscillators.oscillators import (
 )
 from src.wave_chain import Chain, WaveAdder
 from src.modulator import ModulatedOscillator
-from src.modifier import Panner
+from src.modifier import Panner, Volume, ModulatedVolume
 from src.envelopes import ADSREnvelope
 from typing import Union, Optional
 import numpy as np
@@ -45,22 +45,53 @@ class SynthEngine:
 
         wavfile.write(fname, sample_rate, wav_arr)
 
+    # If mono, single graph is plotted.
+    # If stereo, we plot L, R and combined graphs
     def plot_waveform(
         self,
-        wav: Union[list[float], npt.NDArray[np.float64]],
+        wav: Union[list[float], list[tuple[float, float]], npt.NDArray[np.float64]],
         fname: str,
         title: str = "Waveform",
     ) -> None:
         wav_arr = np.array(wav)
         time_axis = np.linspace(0, self._sample_duration_sec, len(wav_arr))
 
-        plt.figure(figsize=(10, 4))
-        plt.plot(time_axis, wav_arr, linewidth=0.5)
-        plt.title(title)
-        plt.xlabel("Time (s)")
-        plt.ylabel("Amplitude")
-        plt.grid(True)
-        plt.tight_layout()
+        if wav_arr.ndim == 1:  
+            # MONO
+            plt.figure(figsize=(10, 4))
+            plt.plot(time_axis, wav_arr, linewidth=0.5)
+            plt.title(title)
+            plt.xlabel("Time (s)")
+            plt.ylabel("Amplitude")
+            plt.grid(True)
+            plt.tight_layout()
+        elif wav_arr.ndim == 2 and wav_arr.shape[1] == 2:
+            # STEREO
+            left = wav_arr[:, 0]
+            right = wav_arr[:, 1]
+            # combined = (left + right) / 2
+
+            fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True)
+
+            axes[0].plot(time_axis, left, color='tab:blue', linewidth=0.5)
+            axes[0].set_title(f"{title} - Left Channel")
+            axes[0].set_ylabel("Amplitude")
+            axes[0].grid(True)
+
+            axes[1].plot(time_axis, right, color='tab:orange', linewidth=0.5)
+            axes[1].set_title(f"{title} - Right Channel")
+            axes[1].set_ylabel("Amplitude")
+            axes[1].grid(True)
+
+            axes[2].plot(time_axis, wav_arr, linewidth=0.5)
+            axes[2].set_title(f"{title} - Combined (Mono Mix)")
+            axes[2].set_xlabel("Time (s)")
+            axes[2].set_ylabel("Amplitude")
+            axes[2].grid(True)
+
+            plt.tight_layout()
+        else:
+            raise ValueError("Waveform must be mono or stereo (Nx2 array)")
 
         plt.savefig(f"{fname}.png")
         plt.close()
@@ -104,34 +135,67 @@ class SynthEngine:
         #     freq_mod=simple_freq_mod
         # )
 
+        # gen: Generator = WaveAdder(
+        #     ModulatedOscillator(
+        #         SineOscillator(note_to_hz("A2")),
+        #         ADSREnvelope(0.01, 0.1, 0.4),
+        #         amp_mod=amp_mod,
+        #     ),
+        #     ModulatedOscillator(
+        #         SineOscillator(note_to_hz("A2") + 3),
+        #         ADSREnvelope(0.01, 0.1, 0.4),
+        #         amp_mod=amp_mod,
+        #     ),
+        #     Chain(
+        #         ModulatedOscillator(
+        #             TriangleOscillator(note_to_hz("C4")),
+        #             ADSREnvelope(0.5),
+        #             amp_mod=amp_mod,
+        #         ),
+        #         Panner(0.7),
+        #     ),
+        #     Chain(
+        #         ModulatedOscillator(
+        #             TriangleOscillator(note_to_hz("E3")),
+        #             ADSREnvelope(0.5),
+        #             amp_mod=amp_mod,
+        #         ),
+        #         Panner(0.3),
+        #     ),
+        #     stereo=True,
+        # )
+
         gen: Generator = WaveAdder(
             ModulatedOscillator(
                 SineOscillator(note_to_hz("A2")),
                 ADSREnvelope(0.01, 0.1, 0.4),
                 amp_mod=amp_mod,
             ),
-            ModulatedOscillator(
-                SineOscillator(note_to_hz("A2") + 3),
-                ADSREnvelope(0.01, 0.1, 0.4),
-                amp_mod=amp_mod,
+            Chain(
+                WaveAdder(
+                    SineOscillator(note_to_hz("A2")),
+                    SineOscillator(note_to_hz("A2") + 3),
+                ),
+                ModulatedVolume(
+                    ADSREnvelope(0.01, 0.1, 0.4),
+                )
             ),
             Chain(
-                ModulatedOscillator(
-                    TriangleOscillator(note_to_hz("C4")),
-                    ADSREnvelope(0.5),
-                    amp_mod=amp_mod,
+                WaveAdder(
+                    Chain(
+                        TriangleOscillator(note_to_hz("C4")),
+                        Panner(0.7)
+                    ),
+                    Chain(
+                        TriangleOscillator(note_to_hz("E3")),
+                        Panner(0.3)
+                    ), stereo=True
                 ),
-                Panner(0.7),
+                ModulatedVolume(
+                    ADSREnvelope(0.5)
+                )
             ),
-            Chain(
-                ModulatedOscillator(
-                    TriangleOscillator(note_to_hz("E3")),
-                    ADSREnvelope(0.5),
-                    amp_mod=amp_mod,
-                ),
-                Panner(0.3),
-            ),
-            stereo=True,
+            stereo=True
         )
 
         iter(gen)
@@ -143,3 +207,5 @@ class SynthEngine:
         filename: str = "prelude_one"
         self.plot_waveform(wav[:20000], fname=filename)
         self.wave_to_file(wav, fname=f"{filename}.wav")
+
+        print("DONE.")

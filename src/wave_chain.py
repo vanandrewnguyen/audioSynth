@@ -4,6 +4,7 @@ from src.modulator import TriggerableFloatGenerator, ModulatorType
 from typing import Union, Iterator, Callable, Tuple, Any
 
 
+# Wave adder composes in parallel multiple generators
 class WaveAdder(Generator):
     # By default stereo is false, no panning
     def __init__(self, *generators: Iterator, stereo: bool = False) -> None:
@@ -47,6 +48,7 @@ class WaveAdder(Generator):
             return sum(vals) / len(vals)
 
 
+# Chain takes a single generator and chains modifiers in sequence instead of parallel
 class Chain:
     def __init__(
         self, generator: Union[Iterator[float], ModulatorType], *modifiers: Any
