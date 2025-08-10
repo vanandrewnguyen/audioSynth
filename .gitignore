@@ -2,6 +2,7 @@ venv/
 .env/
 env/
 venv_wsl/
+venv_powershell/
 **/__pycache__/
 *.wav
 *.png

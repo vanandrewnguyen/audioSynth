@@ -227,25 +227,23 @@ class SynthEngine:
                         ModulatedOscillator(
                             SineOscillator(freq=20),
                             ADSREnvelope(0, 4, 0),
-                            freq_mod=amp_mod
+                            freq_mod=amp_mod,
                         ),
-                        freq_mod=freq_mod
+                        freq_mod=freq_mod,
                     ),
-                    Panner(r=0)
+                    Panner(r=0),
                 ),
                 Chain(
                     ModulatedOscillator(
                         SineOscillator(freq=note_to_hz("A4")),
                         ModulatedOscillator(
-                            SineOscillator(freq=20),
-                            ADSREnvelope(4),
-                            freq_mod=amp_mod
+                            SineOscillator(freq=20), ADSREnvelope(4), freq_mod=amp_mod
                         ),
-                        freq_mod=freq_mod
+                        freq_mod=freq_mod,
                     ),
-                    Panner(r=1)
+                    Panner(r=1),
                 ),
-                stereo=True
+                stereo=True,
             )
         )
 
