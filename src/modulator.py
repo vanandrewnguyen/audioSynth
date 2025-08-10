@@ -22,6 +22,7 @@ from src.oscillators.base_oscillator import Generator
 # Stereo vs mono, can have 1/2 channels
 NumberOrStereo = Union[float, tuple[float, float]]
 
+
 @runtime_checkable
 class TriggerableFloatGenerator(Protocol):
     ended: bool
