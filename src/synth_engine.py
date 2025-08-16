@@ -219,7 +219,7 @@ class SynthEngine:
         #     stereo=True
         # )
 
-        gen = Chain(
+        gen: Chain = Chain(
             WaveAdder(
                 Chain(
                     ModulatedOscillator(
